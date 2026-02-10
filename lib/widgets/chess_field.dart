@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-class ChessSquare extends StatelessWidget {
+class ChessField extends StatelessWidget {
   final bool isLight;
   final int row;
   final int col;
 
-  const ChessSquare({
+  const ChessField({
     super.key,
     required this.isLight,
     required this.row,

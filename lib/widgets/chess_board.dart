@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'chess_square.dart';
+import 'chess_field.dart';
 
 class ChessBoard extends StatelessWidget {
   const ChessBoard({super.key});
@@ -22,7 +22,7 @@ class ChessBoard extends StatelessWidget {
             final col = index % 8;
             final isLight = (row + col) % 2 == 0;
 
-            return ChessSquare(isLight: isLight, row: row, col: col);
+            return ChessField(isLight: isLight, row: row, col: col);
           },
         ),
       ),
