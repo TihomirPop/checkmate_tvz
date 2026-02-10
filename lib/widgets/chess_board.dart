@@ -22,11 +22,7 @@ class ChessBoard extends StatelessWidget {
             final col = index % 8;
             final isLight = (row + col) % 2 == 0;
 
-            return ChessSquare(
-              isLight: isLight,
-              row: row,
-              col: col,
-            );
+            return ChessSquare(isLight: isLight, row: row, col: col);
           },
         ),
       ),
