@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'widgets/chess_board.dart';
+import 'widgets/chess_board_widget.dart';
 
 void main() {
   runApp(const MyApp());
@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
               return SizedBox(
                 width: maxSize,
                 height: maxSize,
-                child: const ChessBoard(),
+                child: const ChessBoardWidget(),
               );
             },
           ),

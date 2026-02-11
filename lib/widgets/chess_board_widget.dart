@@ -3,14 +3,14 @@ import '../models/chess_piece.dart';
 import '../models/chess_position.dart';
 import 'chess_field.dart';
 
-class ChessBoard extends StatefulWidget {
-  const ChessBoard({super.key});
+class ChessBoardWidget extends StatefulWidget {
+  const ChessBoardWidget({super.key});
 
   @override
-  State<ChessBoard> createState() => _ChessBoardState();
+  State<ChessBoardWidget> createState() => _ChessBoardWidgetState();
 }
 
-class _ChessBoardState extends State<ChessBoard> {
+class _ChessBoardWidgetState extends State<ChessBoardWidget> {
   Map<ChessPosition, ChessPiece> pieces = {};
   ChessPosition? dragSourcePosition;
 
