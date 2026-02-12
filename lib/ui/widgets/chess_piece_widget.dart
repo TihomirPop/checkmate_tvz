@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import '../models/chess_piece.dart';
+import '../../domain/chess_piece.dart';
 
 class ChessPieceWidget extends StatelessWidget {
   final ChessPiece piece;

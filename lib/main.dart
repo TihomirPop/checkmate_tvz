@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'widgets/chess_board_widget.dart';
+import 'ui/widgets/chess_board_widget.dart';
 
 void main() {
   runApp(const MyApp());

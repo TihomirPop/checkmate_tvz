@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
-import '../../models/chess_board.dart';
-import '../../models/chess_piece.dart';
-import '../../models/chess_position.dart';
+import '../../domain/chess_board.dart';
+import '../../domain/chess_piece.dart';
+import '../../domain/chess_position.dart';
 import '../result/result.dart';
 import '../services/chess_api_service.dart';
 

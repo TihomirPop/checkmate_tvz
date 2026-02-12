@@ -1,9 +1,9 @@
-import 'package:checkmate_tvz/models/chess_board.dart';
+import 'package:checkmate_tvz/domain/chess_board.dart';
 import 'package:flutter/material.dart';
-import '../data/repositories/chess_game_repository.dart';
-import '../data/result/result.dart';
-import '../models/chess_piece.dart';
-import '../models/chess_position.dart';
+import '../../data/repositories/chess_game_repository.dart';
+import '../../data/result/result.dart';
+import '../../domain/chess_piece.dart';
+import '../../domain/chess_position.dart';
 import 'chess_field.dart';
 
 class ChessBoardWidget extends StatefulWidget {
@@ -44,6 +44,8 @@ class _ChessBoardWidgetState extends State<ChessBoardWidget> {
           chessBoard = board;
         case Failure(message: final msg):
           _errorMessage = msg;
+          // Fallback to local initialization for offline functionality
+          chessBoard.init();
       }
     });
   }

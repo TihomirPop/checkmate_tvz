@@ -1,5 +1,5 @@
-import 'package:checkmate_tvz/models/chess_piece.dart';
-import 'package:checkmate_tvz/models/chess_position.dart';
+import 'package:checkmate_tvz/domain/chess_piece.dart';
+import 'package:checkmate_tvz/domain/chess_position.dart';
 
 class ChessBoard {
   Map<ChessPosition, ChessPiece> pieces = {};

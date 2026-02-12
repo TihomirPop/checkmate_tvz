@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../models/chess_piece.dart';
-import '../models/chess_position.dart';
+import '../../domain/chess_piece.dart';
+import '../../domain/chess_position.dart';
 import 'chess_piece_widget.dart';
 
 class ChessField extends StatelessWidget {
