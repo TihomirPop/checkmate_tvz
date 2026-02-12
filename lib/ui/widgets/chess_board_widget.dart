@@ -32,6 +32,7 @@ class _ChessBoardWidgetState extends State<ChessBoardWidget> {
       _errorMessage = null;
     });
 
+    chessBoard.init();
     final fen = chessBoard.toFen();
     final result = await _repository.startGameFromFen(fen: fen, isWhite: true);
 

@@ -24,6 +24,21 @@ class ChessPiece {
     return 'assets/images/chess_pieces/Chess_$typeChar${colorChar}t45.svg';
   }
 
+  String toFenChar() {
+    final baseChar = switch (type) {
+      PieceType.pawn => 'p',
+      PieceType.knight => 'n',
+      PieceType.bishop => 'b',
+      PieceType.rook => 'r',
+      PieceType.queen => 'q',
+      PieceType.king => 'k',
+    };
+
+    return color == PieceColor.light
+        ? baseChar.toUpperCase()
+        : baseChar;
+  }
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||

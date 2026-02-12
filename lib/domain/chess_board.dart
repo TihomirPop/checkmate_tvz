@@ -82,7 +82,46 @@ class ChessBoard {
   }
 
   String toFen() {
-    // todo: implement FEN generation based on current board state
-    return "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    final buffer = StringBuffer();
+
+    // Part 1: Piece placement (from rank 8 to rank 1)
+    for (int row = 0; row < 8; row++) {
+      int emptyCount = 0;
+
+      for (int col = 0; col < 8; col++) {
+        final position = ChessPosition(row, col);
+        final piece = pieces[position];
+
+        if (piece == null) {
+          emptyCount++;
+        } else {
+          // Append empty count before piece if any
+          if (emptyCount > 0) {
+            buffer.write(emptyCount);
+            emptyCount = 0;
+          }
+          buffer.write(piece.toFenChar());
+        }
+      }
+
+      // Append remaining empty count at end of rank
+      if (emptyCount > 0) {
+        buffer.write(emptyCount);
+      }
+
+      // Add rank separator except after last rank
+      if (row < 7) {
+        buffer.write('/');
+      }
+    }
+
+    // Parts 2-6: Default values (board state doesn't track these yet)
+    buffer.write(' w');      // Active color (default: white to move)
+    buffer.write(' KQkq');   // Castling rights (default: all available)
+    buffer.write(' -');      // En passant (default: none)
+    buffer.write(' 0');      // Halfmove clock (default: 0)
+    buffer.write(' 1');      // Fullmove number (default: 1)
+
+    return buffer.toString();
   }
 }
