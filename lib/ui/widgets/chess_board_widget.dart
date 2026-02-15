@@ -99,6 +99,16 @@ class _ChessBoardWidgetState extends State<ChessBoardWidget> {
     });
   }
 
+  void _onPieceDeletedFromBoard() {
+    setState(() {
+      // Remove piece from its source position
+      if (dragSourcePosition != null) {
+        chessBoard.pieces.remove(dragSourcePosition);
+        dragSourcePosition = null;
+      }
+    });
+  }
+
   void _onDragStarted(ChessPosition position) {
     setState(() {
       dragSourcePosition = position;
@@ -130,9 +140,9 @@ class _ChessBoardWidgetState extends State<ChessBoardWidget> {
         if (_boardMode == BoardMode.edit) ...[
           const SizedBox(height: 16),
           // Piece spawner for adding pieces to the board
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.0),
-            child: PieceSpawnerWidget(),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: PieceSpawnerWidget(onPieceDeleted: _onPieceDeletedFromBoard),
           ),
           const SizedBox(height: 16),
           // Start game button (fixed: removed Positioned wrapper)
