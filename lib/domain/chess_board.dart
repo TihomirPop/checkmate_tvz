@@ -3,8 +3,10 @@ import 'package:checkmate_tvz/domain/chess_position.dart';
 
 class ChessBoard {
   Map<ChessPosition, ChessPiece> pieces = {};
-  
+
   void init() {
+    pieces.clear();
+
     pieces[const ChessPosition(0, 0)] = ChessPiece(
       type: PieceType.rook,
       color: PieceColor.dark,
@@ -116,11 +118,11 @@ class ChessBoard {
     }
 
     // Parts 2-6: Default values (board state doesn't track these yet)
-    buffer.write(' w');      // Active color (default: white to move)
-    buffer.write(' KQkq');   // Castling rights (default: all available)
-    buffer.write(' -');      // En passant (default: none)
-    buffer.write(' 0');      // Halfmove clock (default: 0)
-    buffer.write(' 1');      // Fullmove number (default: 1)
+    buffer.write(' w'); // Active color (default: white to move)
+    buffer.write(' KQkq'); // Castling rights (default: all available)
+    buffer.write(' -'); // En passant (default: none)
+    buffer.write(' 0'); // Halfmove clock (default: 0)
+    buffer.write(' 1'); // Fullmove number (default: 1)
 
     return buffer.toString();
   }
