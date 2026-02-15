@@ -353,12 +353,13 @@ class ChessBoardWidgetState extends State<ChessBoardWidget> {
             child: PieceSpawnerWidget(onPieceDeleted: _onPieceDeletedFromBoard),
           ),
           const SizedBox(height: 16),
-          // Start game button (fixed: removed Positioned wrapper)
-          FloatingActionButton.extended(
+          FilledButton.icon(
             onPressed: _startGame,
             icon: const Icon(Icons.play_arrow),
             label: const Text('Start Game'),
-            backgroundColor: Theme.of(context).colorScheme.primary,
+            style: FilledButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            ),
           ),
         ],
       ],
