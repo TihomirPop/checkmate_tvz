@@ -12,7 +12,7 @@ class ChessBoardWidget extends StatefulWidget {
   const ChessBoardWidget({super.key});
 
   @override
-  State<ChessBoardWidget> createState() => _ChessBoardWidgetState();
+  ChessBoardWidgetState createState() => ChessBoardWidgetState();
 }
 
 enum BoardMode {
@@ -20,7 +20,8 @@ enum BoardMode {
   play, // Normal gameplay with backend
 }
 
-class _ChessBoardWidgetState extends State<ChessBoardWidget> {
+/// Public state class to allow external access via GlobalKey
+class ChessBoardWidgetState extends State<ChessBoardWidget> {
   final ChessGameRepository _repository = ChessGameRepository();
   ChessBoard chessBoard = ChessBoard();
   ChessPosition? dragSourcePosition;
@@ -34,6 +35,11 @@ class _ChessBoardWidgetState extends State<ChessBoardWidget> {
   @override
   void initState() {
     super.initState();
+    _initializeBoard();
+  }
+
+  /// Public method to reset the game (used by drawer via GlobalKey)
+  void resetGame() {
     _initializeBoard();
   }
 

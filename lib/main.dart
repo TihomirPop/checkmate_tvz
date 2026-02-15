@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'ui/widgets/chess_board_widget.dart';
+import 'ui/widgets/game_drawer.dart';
 
 void main() {
   runApp(const MyApp());
@@ -10,6 +11,9 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // GlobalKey allows direct access to ChessBoardWidget's state
+    final chessBoardKey = GlobalKey<ChessBoardWidgetState>();
+
     return MaterialApp(
       title: 'Checkmate TVZ',
       theme: ThemeData(
@@ -21,7 +25,10 @@ class MyApp extends StatelessWidget {
           title: const Text('Checkmate TVZ'),
           backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         ),
-        body: ChessBoardWidget(),
+        drawer: GameDrawer(
+          onNewGame: () => chessBoardKey.currentState?.resetGame(),
+        ),
+        body: ChessBoardWidget(key: chessBoardKey),
       ),
     );
   }
