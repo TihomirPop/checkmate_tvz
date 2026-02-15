@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'ui/widgets/chess_board_widget.dart';
+import 'ui/widgets/fen_input_dialog.dart';
 import 'ui/widgets/game_drawer.dart';
 
 void main() {
@@ -20,15 +21,27 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.brown),
         useMaterial3: true,
       ),
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Checkmate TVZ'),
-          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+      home: Builder(
+        builder: (context) => Scaffold(
+          appBar: AppBar(
+            title: const Text('Checkmate TVZ'),
+            backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+          ),
+          drawer: GameDrawer(
+            onNewGame: () => chessBoardKey.currentState?.resetGame(),
+            onLoadFen: () {
+              showDialog<void>(
+                context: context,
+                builder: (context) => FenInputDialog(
+                  onSubmit: (fen) {
+                    chessBoardKey.currentState?.loadFromFen(fen);
+                  },
+                ),
+              );
+            },
+          ),
+          body: ChessBoardWidget(key: chessBoardKey),
         ),
-        drawer: GameDrawer(
-          onNewGame: () => chessBoardKey.currentState?.resetGame(),
-        ),
-        body: ChessBoardWidget(key: chessBoardKey),
       ),
     );
   }

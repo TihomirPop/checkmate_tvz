@@ -38,9 +38,60 @@ class ChessBoardWidgetState extends State<ChessBoardWidget> {
     _initializeBoard();
   }
 
-  /// Public method to reset the game (used by drawer via GlobalKey)
+  /// Public method to reset the game
   void resetGame() {
     _initializeBoard();
+  }
+
+  /// Public method to load board from FEN string
+  /// Loads the position but keeps the board in Edit Mode for manual adjustments
+  Future<void> loadFromFen(String fen) async {
+    if (kDebugMode) {
+      print('[ChessBoard] Loading from FEN: $fen');
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    // Use existing repository method
+    final result = await _repository.startGameFromFen(fen: fen, isWhite: true);
+
+    if (!mounted) return;
+
+    setState(() {
+      _isLoading = false;
+
+      switch (result) {
+        case Success(data: final board):
+          chessBoard = board;
+          _boardMode = BoardMode.edit; // Keep in edit mode!
+          _hasStartedGame = false;
+          _gameOverMessage = null;
+          _validMoves = {};
+
+          if (kDebugMode) {
+            print('[ChessBoard] Loaded FEN successfully, staying in Edit Mode');
+          }
+
+        case Failure(message: final msg):
+          _errorMessage = null; // Don't show error screen for FEN loading
+          if (kDebugMode) {
+            print('[ChessBoard] Failed to load FEN: $msg');
+          }
+
+          // Show error to user via SnackBar
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Invalid FEN: $msg'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+      }
+    });
   }
 
   void _initializeBoard() {

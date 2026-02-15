@@ -5,13 +5,16 @@ import 'package:flutter/material.dart';
 /// Provides consistent access to game controls regardless of current game state.
 /// Currently includes:
 /// - New Game: Resets the board to Edit Mode
+/// - Load from FEN: Loads a custom position from FEN string
 ///
 /// Designed to be extensible for future features (settings, history, etc.)
 class GameDrawer extends StatelessWidget {
   /// Callback invoked when user taps "New Game"
   final VoidCallback? onNewGame;
 
-  const GameDrawer({super.key, this.onNewGame});
+  final VoidCallback? onLoadFen;
+
+  const GameDrawer({super.key, this.onNewGame, this.onLoadFen});
 
   @override
   Widget build(BuildContext context) {
@@ -52,6 +55,16 @@ class GameDrawer extends StatelessWidget {
               Navigator.pop(context);
               // Then invoke callback if provided
               onNewGame?.call();
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.input),
+            title: const Text('Load from FEN'),
+            onTap: () {
+              // Close drawer first for smooth UX
+              Navigator.pop(context);
+              // Then invoke callback if provided
+              onLoadFen?.call();
             },
           ),
           const Divider(),
