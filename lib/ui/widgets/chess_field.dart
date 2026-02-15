@@ -12,6 +12,7 @@ class ChessField extends StatelessWidget {
   final VoidCallback? onDragStarted;
   final VoidCallback? onDragCompleted;
   final bool isDraggingEnabled;
+  final bool Function(ChessPosition)? canAcceptPiece;
 
   const ChessField({
     super.key,
@@ -23,11 +24,20 @@ class ChessField extends StatelessWidget {
     this.onDragStarted,
     this.onDragCompleted,
     this.isDraggingEnabled = true,
+    this.canAcceptPiece,
   });
 
   @override
   Widget build(BuildContext context) {
     return DragTarget<ChessPiece>(
+      onWillAcceptWithDetails: (details) {
+        if (canAcceptPiece != null) {
+          final position = ChessPosition(row, col);
+          return canAcceptPiece!(position);
+        }
+
+        return true;
+      },
       onAcceptWithDetails: (details) {
         final position = ChessPosition(row, col);
         onPieceDropped?.call(details.data, position);

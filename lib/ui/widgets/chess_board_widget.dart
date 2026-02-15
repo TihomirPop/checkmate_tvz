@@ -121,6 +121,11 @@ class _ChessBoardWidgetState extends State<ChessBoardWidget> {
     });
   }
 
+  bool _canAcceptPieceInEditMode(ChessPosition position) {
+    // In edit mode, only allow drops on empty squares
+    return !chessBoard.pieces.containsKey(position);
+  }
+
   @override
   void dispose() {
     _repository.dispose();
@@ -235,6 +240,9 @@ class _ChessBoardWidgetState extends State<ChessBoardWidget> {
               onDragStarted: () => _onDragStarted(position),
               onDragCompleted: _onDragCompleted,
               isDraggingEnabled: !_isLoading,
+              canAcceptPiece: _boardMode == BoardMode.edit
+                  ? _canAcceptPieceInEditMode
+                  : null,
             );
           },
         ),
