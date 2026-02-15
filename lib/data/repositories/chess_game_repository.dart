@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import '../../domain/chess_board.dart';
 import '../../domain/chess_piece.dart';
 import '../../domain/chess_position.dart';
+import '../models/move_dto.dart';
 import '../result/result.dart';
 import '../services/chess_api_service.dart';
 
@@ -9,7 +10,7 @@ class ChessGameRepository {
   final ChessApiService _apiService;
 
   ChessGameRepository({ChessApiService? apiService})
-      : _apiService = apiService ?? ChessApiService();
+    : _apiService = apiService ?? ChessApiService();
 
   /// Start a new game from a FEN position
   /// Transforms the API response (64-character array) into ChessBoard domain model
@@ -21,8 +22,10 @@ class ChessGameRepository {
 
     return switch (result) {
       Success(data: final response) => _transformToChessBoard(response.board),
-      Failure(message: final msg, statusCode: final code) =>
-        Failure(msg, statusCode: code),
+      Failure(message: final msg, statusCode: final code) => Failure(
+        msg,
+        statusCode: code,
+      ),
     };
   }
 
@@ -51,7 +54,9 @@ class ChessGameRepository {
     }
 
     if (kDebugMode) {
-      print('[Repository] Transformed ${pieces.length} pieces from board array');
+      print(
+        '[Repository] Transformed ${pieces.length} pieces from board array',
+      );
     }
 
     return Success(ChessBoard()..pieces = pieces);
@@ -94,12 +99,50 @@ class ChessGameRepository {
     throw UnimplementedError('makeMove not yet implemented');
   }
 
-  /// Get legal moves for a piece at the given position
-  Future<Result<List<String>>> getLegalMoves({
-    required String position,
-  }) async {
-    // TODO: Implement when backend endpoint is ready
-    throw UnimplementedError('getLegalMoves not yet implemented');
+  /// Get all valid moves for the current game state
+  /// Returns a map where key = source position, value = set of valid destinations
+  Future<Result<Map<ChessPosition, Set<ChessPosition>>>>
+  getAllValidMoves() async {
+    final result = await _apiService.getAllMoves();
+    return switch (result) {
+      Success(data: final moves) => _transformToValidMovesMap(moves),
+      Failure(message: final msg, statusCode: final code) => Failure(
+        msg,
+        statusCode: code,
+      ),
+    };
+  }
+
+  /// Transform list of MoveDto to Map with ChessPosition keys and Set values
+  /// Groups moves by source position for efficient lookup
+  Result<Map<ChessPosition, Set<ChessPosition>>> _transformToValidMovesMap(
+    List<MoveDto> moves,
+  ) {
+    final validMoves = <ChessPosition, Set<ChessPosition>>{};
+
+    for (final move in moves) {
+      final fromPosition = _indexToPosition(move.from);
+      final toPosition = _indexToPosition(move.to);
+      validMoves
+          .putIfAbsent(fromPosition, () => <ChessPosition>{})
+          .add(toPosition);
+    }
+
+    if (kDebugMode) {
+      print(
+        '[Repository] Transformed ${moves.length} moves into ${validMoves.length} source positions',
+      );
+    }
+
+    return Success(validMoves);
+  }
+
+  /// Convert 0-63 board index to ChessPosition
+  /// Backend uses 0=a8, 7=h8, 56=a1, 63=h1
+  ChessPosition _indexToPosition(int index) {
+    final row = index ~/ 8;
+    final col = index % 8;
+    return ChessPosition(row, col);
   }
 
   /// Dispose resources

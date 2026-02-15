@@ -28,6 +28,7 @@ class _ChessBoardWidgetState extends State<ChessBoardWidget> {
   String? _errorMessage;
   BoardMode _boardMode = BoardMode.edit;
   bool _hasStartedGame = false;
+  Map<ChessPosition, Set<ChessPosition>> _validMoves = {};
 
   @override
   void initState() {
@@ -78,10 +79,38 @@ class _ChessBoardWidgetState extends State<ChessBoardWidget> {
               '[ChessBoard] Game started successfully, switched to Play Mode',
             );
           }
+          // Fetch valid moves asynchronously (don't await)
+          _fetchValidMoves();
         case Failure(message: final msg):
           _errorMessage = msg;
           _boardMode = BoardMode.edit; // Stay in edit mode on error
           _hasStartedGame = false; // Allow retry
+      }
+    });
+  }
+
+  Future<void> _fetchValidMoves() async {
+    if (_boardMode != BoardMode.play) return;
+
+    if (kDebugMode) {
+      print('[ChessBoard] Fetching valid moves...');
+    }
+
+    final result = await _repository.getAllValidMoves();
+    if (!mounted) return;
+
+    setState(() {
+      switch (result) {
+        case Success(data: final moves):
+          _validMoves = moves;
+          if (kDebugMode) {
+            print('[ChessBoard] Loaded ${moves.length} source positions with valid moves');
+          }
+        case Failure(message: final msg):
+          if (kDebugMode) {
+            print('[ChessBoard] Failed to fetch moves: $msg');
+          }
+          _validMoves = {};
       }
     });
   }
@@ -124,6 +153,18 @@ class _ChessBoardWidgetState extends State<ChessBoardWidget> {
   bool _canAcceptPieceInEditMode(ChessPosition position) {
     // In edit mode, only allow drops on empty squares
     return !chessBoard.pieces.containsKey(position);
+  }
+
+  bool _canAcceptPieceInPlayMode(ChessPosition targetPosition) {
+    if (dragSourcePosition == null) return false;
+    final validDestinations = _validMoves[dragSourcePosition];
+    return validDestinations?.contains(targetPosition) ?? false;
+  }
+
+  bool _isValidMoveTarget(ChessPosition position) {
+    if (_boardMode != BoardMode.play) return false;
+    if (dragSourcePosition == null) return false;
+    return _validMoves[dragSourcePosition]?.contains(position) ?? false;
   }
 
   @override
@@ -242,7 +283,8 @@ class _ChessBoardWidgetState extends State<ChessBoardWidget> {
               isDraggingEnabled: !_isLoading,
               canAcceptPiece: _boardMode == BoardMode.edit
                   ? _canAcceptPieceInEditMode
-                  : null,
+                  : _canAcceptPieceInPlayMode,
+              isValidMoveTarget: _isValidMoveTarget(position),
             );
           },
         ),
