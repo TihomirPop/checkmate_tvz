@@ -6,6 +6,7 @@ import '../../data/result/result.dart';
 import '../../domain/chess_piece.dart';
 import '../../domain/chess_position.dart';
 import 'chess_field.dart';
+import 'piece_spawner_widget.dart';
 
 class ChessBoardWidget extends StatefulWidget {
   const ChessBoardWidget({super.key});
@@ -15,8 +16,8 @@ class ChessBoardWidget extends StatefulWidget {
 }
 
 enum BoardMode {
-  edit,   // User is arranging pieces
-  play    // Normal gameplay with backend
+  edit, // User is arranging pieces
+  play, // Normal gameplay with backend
 }
 
 class _ChessBoardWidgetState extends State<ChessBoardWidget> {
@@ -47,7 +48,7 @@ class _ChessBoardWidgetState extends State<ChessBoardWidget> {
   }
 
   Future<void> _startGame() async {
-    if (_hasStartedGame) return;  // Prevent double-starts
+    if (_hasStartedGame) return; // Prevent double-starts
 
     setState(() {
       _isLoading = true;
@@ -71,14 +72,16 @@ class _ChessBoardWidgetState extends State<ChessBoardWidget> {
       switch (result) {
         case Success(data: final board):
           chessBoard = board;
-          _boardMode = BoardMode.play;  // Transition to play mode
+          _boardMode = BoardMode.play; // Transition to play mode
           if (kDebugMode) {
-            print('[ChessBoard] Game started successfully, switched to Play Mode');
+            print(
+              '[ChessBoard] Game started successfully, switched to Play Mode',
+            );
           }
         case Failure(message: final msg):
           _errorMessage = msg;
-          _boardMode = BoardMode.edit;  // Stay in edit mode on error
-          _hasStartedGame = false;      // Allow retry
+          _boardMode = BoardMode.edit; // Stay in edit mode on error
+          _hasStartedGame = false; // Allow retry
       }
     });
   }
@@ -122,19 +125,24 @@ class _ChessBoardWidgetState extends State<ChessBoardWidget> {
 
     return Column(
       children: [
-        board(),  // Existing board widget
+        board(), // Existing board widget
 
-        if (_boardMode == BoardMode.edit)
-          Positioned(
-            bottom: 16,
-            right: 16,
-            child: FloatingActionButton.extended(
-              onPressed: _startGame,
-              icon: const Icon(Icons.play_arrow),
-              label: const Text('Start Game'),
-              backgroundColor: Theme.of(context).colorScheme.primary,
-            ),
+        if (_boardMode == BoardMode.edit) ...[
+          const SizedBox(height: 16),
+          // Piece spawner for adding pieces to the board
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.0),
+            child: PieceSpawnerWidget(),
           ),
+          const SizedBox(height: 16),
+          // Start game button (fixed: removed Positioned wrapper)
+          FloatingActionButton.extended(
+            onPressed: _startGame,
+            icon: const Icon(Icons.play_arrow),
+            label: const Text('Start Game'),
+            backgroundColor: Theme.of(context).colorScheme.primary,
+          ),
+        ],
       ],
     );
   }
@@ -168,9 +176,9 @@ class _ChessBoardWidgetState extends State<ChessBoardWidget> {
             ElevatedButton.icon(
               onPressed: () {
                 setState(() {
-                  _errorMessage = null;  // Clear error, try again
+                  _errorMessage = null; // Clear error, try again
                 });
-                _startGame();  // Retry with current position (NOT _initializeGame)
+                _startGame(); // Retry with current position (NOT _initializeGame)
               },
               icon: const Icon(Icons.refresh),
               label: const Text('Retry'),
@@ -207,7 +215,7 @@ class _ChessBoardWidgetState extends State<ChessBoardWidget> {
             final isLight = (row + col) % 2 == 0;
             final position = ChessPosition(row, col);
             final piece = chessBoard.pieces[position];
-    
+
             return ChessField(
               isLight: isLight,
               row: row,
