@@ -3,6 +3,7 @@ import '../../domain/chess_board.dart';
 import '../../domain/chess_piece.dart';
 import '../../domain/chess_position.dart';
 import '../models/move_dto.dart';
+import '../models/move_result.dart';
 import '../result/result.dart';
 import '../services/chess_api_service.dart';
 
@@ -87,16 +88,53 @@ class ChessGameRepository {
     return ChessPiece(type: type, color: color);
   }
 
-  // Placeholder methods for future endpoints
-
-  /// Make a move and get the updated board state
-  Future<Result<ChessBoard>> makeMove({
-    required String from,
-    required String to,
-    String? promotion,
+  /// Make a move and get the updated board state with optional end game message
+  /// Converts ChessPosition to board indices, calls backend, transforms response
+  Future<Result<MoveResult>> makeMove({
+    required ChessPosition from,
+    required ChessPosition to,
   }) async {
-    // TODO: Implement when backend endpoint is ready
-    throw UnimplementedError('makeMove not yet implemented');
+    final fromIndex = _positionToIndex(from);
+    final toIndex = _positionToIndex(to);
+
+    if (kDebugMode) {
+      print(
+        '[Repository] Making move: from $from (index $fromIndex) to $to (index $toIndex)',
+      );
+    }
+
+    final result = await _apiService.makeMove(
+      fromIndex: fromIndex,
+      toIndex: toIndex,
+      thinkingTime: 600,
+    );
+
+    return switch (result) {
+      Success(data: final response) => _transformToMoveResult(response),
+      Failure(message: final msg, statusCode: final code) => Failure(
+        msg,
+        statusCode: code,
+      ),
+    };
+  }
+
+  Result<MoveResult> _transformToMoveResult(
+    dynamic /* ChessGameResponse */ response,
+  ) {
+    final boardResult = _transformToChessBoard(response.board);
+
+    return switch (boardResult) {
+      Success(data: final board) => Success(
+        MoveResult(
+          board: board,
+          endGameMessage: response.endGameMessage,
+        ),
+      ),
+      Failure(message: final msg, statusCode: final code) => Failure(
+        msg,
+        statusCode: code,
+      ),
+    };
   }
 
   /// Get all valid moves for the current game state
@@ -143,6 +181,12 @@ class ChessGameRepository {
     final row = index ~/ 8;
     final col = index % 8;
     return ChessPosition(row, col);
+  }
+
+  /// Convert ChessPosition to 0-63 board index
+  /// Inverse of _indexToPosition
+  int _positionToIndex(ChessPosition position) {
+    return position.row * 8 + position.col;
   }
 
   /// Dispose resources

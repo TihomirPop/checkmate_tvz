@@ -29,6 +29,7 @@ class _ChessBoardWidgetState extends State<ChessBoardWidget> {
   BoardMode _boardMode = BoardMode.edit;
   bool _hasStartedGame = false;
   Map<ChessPosition, Set<ChessPosition>> _validMoves = {};
+  String? _gameOverMessage; // "Player wins", "Opponent wins", or "Stalemate"
 
   @override
   void initState() {
@@ -41,6 +42,8 @@ class _ChessBoardWidgetState extends State<ChessBoardWidget> {
       chessBoard.init();
       _boardMode = BoardMode.edit;
       _hasStartedGame = false;
+      _gameOverMessage = null;
+      _validMoves = {};
     });
 
     if (kDebugMode) {
@@ -103,9 +106,13 @@ class _ChessBoardWidgetState extends State<ChessBoardWidget> {
       switch (result) {
         case Success(data: final moves):
           _validMoves = moves;
+
           if (kDebugMode) {
-            print('[ChessBoard] Loaded ${moves.length} source positions with valid moves');
+            print(
+              '[ChessBoard] Loaded ${moves.length} source positions with valid moves',
+            );
           }
+
         case Failure(message: final msg):
           if (kDebugMode) {
             print('[ChessBoard] Failed to fetch moves: $msg');
@@ -115,16 +122,69 @@ class _ChessBoardWidgetState extends State<ChessBoardWidget> {
     });
   }
 
-  void _onPieceDropped(ChessPiece piece, ChessPosition targetPosition) {
+  Future<void> _onPieceDropped(
+    ChessPiece piece,
+    ChessPosition targetPosition,
+  ) async {
+    if (_boardMode != BoardMode.play) {
+      setState(() {
+        if (dragSourcePosition != null) {
+          chessBoard.pieces.remove(dragSourcePosition);
+        }
+        chessBoard.pieces[targetPosition] = piece;
+        dragSourcePosition = null;
+      });
+      return;
+    }
+
+    final fromPosition = dragSourcePosition;
+    if (fromPosition == null) return;
+
     setState(() {
-      // Remove piece from source position
-      if (dragSourcePosition != null) {
-        chessBoard.pieces.remove(dragSourcePosition);
-      }
-      // Add piece to target position
+      chessBoard.pieces.remove(fromPosition);
       chessBoard.pieces[targetPosition] = piece;
-      // Clear drag source
       dragSourcePosition = null;
+      _isLoading = true;
+    });
+
+    if (kDebugMode) {
+      print(
+        '[ChessBoard] Sending move to backend: $fromPosition -> $targetPosition',
+      );
+    }
+
+    final result = await _repository.makeMove(
+      from: fromPosition,
+      to: targetPosition,
+    );
+
+    if (!mounted) return;
+
+    setState(() {
+      _isLoading = false;
+
+      switch (result) {
+        case Success(data: final moveResult):
+          chessBoard = moveResult.board;
+          _gameOverMessage = moveResult.endGameMessage;
+
+          if (kDebugMode) {
+            print('[ChessBoard] Board updated after AI move');
+            if (moveResult.endGameMessage != null) {
+              print('[ChessBoard] Game over: ${moveResult.endGameMessage}');
+            }
+          }
+
+          if (moveResult.endGameMessage == null) {
+            _fetchValidMoves();
+          }
+
+        case Failure(message: final msg):
+          if (kDebugMode) {
+            print('[ChessBoard] Move failed: $msg');
+          }
+          _errorMessage = msg;
+      }
     });
   }
 
@@ -165,6 +225,51 @@ class _ChessBoardWidgetState extends State<ChessBoardWidget> {
     if (_boardMode != BoardMode.play) return false;
     if (dragSourcePosition == null) return false;
     return _validMoves[dragSourcePosition]?.contains(position) ?? false;
+  }
+
+  bool _isGameOver() {
+    return _gameOverMessage != null;
+  }
+
+  Widget? _buildGameOverOverlay() {
+    if (!_isGameOver()) return null;
+
+    return Positioned.fill(
+      child: Container(
+        color: Colors.black.withAlpha(204),
+        child: Center(
+          child: Card(
+            margin: const EdgeInsets.all(32),
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    _gameOverMessage!.contains('Player wins')
+                        ? Icons.emoji_events
+                        : Icons.handshake,
+                    size: 64,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    _gameOverMessage!,
+                    style: Theme.of(context).textTheme.headlineMedium,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: _initializeBoard,
+                    child: const Text('New Game'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -254,41 +359,48 @@ class _ChessBoardWidgetState extends State<ChessBoardWidget> {
   }
 
   Widget board() {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: AspectRatio(
-        aspectRatio: 1.0,
-        child: GridView.builder(
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 8,
-            childAspectRatio: 1.0,
-          ),
-          itemCount: 64,
-          itemBuilder: (context, index) {
-            final row = index ~/ 8;
-            final col = index % 8;
-            final isLight = (row + col) % 2 == 0;
-            final position = ChessPosition(row, col);
-            final piece = chessBoard.pieces[position];
+    return Stack(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: AspectRatio(
+            aspectRatio: 1.0,
+            child: GridView.builder(
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 8,
+                childAspectRatio: 1.0,
+              ),
+              itemCount: 64,
+              itemBuilder: (context, index) {
+                final row = index ~/ 8;
+                final col = index % 8;
+                final isLight = (row + col) % 2 == 0;
+                final position = ChessPosition(row, col);
+                final piece = chessBoard.pieces[position];
 
-            return ChessField(
-              isLight: isLight,
-              row: row,
-              col: col,
-              piece: piece,
-              onPieceDropped: _onPieceDropped,
-              onDragStarted: () => _onDragStarted(position),
-              onDragCompleted: _onDragCompleted,
-              isDraggingEnabled: !_isLoading,
-              canAcceptPiece: _boardMode == BoardMode.edit
-                  ? _canAcceptPieceInEditMode
-                  : _canAcceptPieceInPlayMode,
-              isValidMoveTarget: _isValidMoveTarget(position),
-            );
-          },
+                return ChessField(
+                  isLight: isLight,
+                  row: row,
+                  col: col,
+                  piece: piece,
+                  onPieceDropped: _onPieceDropped,
+                  onDragStarted: () => _onDragStarted(position),
+                  onDragCompleted: _onDragCompleted,
+                  isDraggingEnabled: !_isLoading && _gameOverMessage == null,
+                  canAcceptPiece: _boardMode == BoardMode.edit
+                      ? _canAcceptPieceInEditMode
+                      : _canAcceptPieceInPlayMode,
+                  isValidMoveTarget: _isValidMoveTarget(position),
+                );
+              },
+            ),
+          ),
         ),
-      ),
+
+        // Game over overlay
+        if (_isGameOver()) _buildGameOverOverlay()!,
+      ],
     );
   }
 }
