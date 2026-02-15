@@ -44,10 +44,7 @@ class ChessGameRepository {
 
       final piece = _parsePieceFromChar(char);
       if (piece == null) {
-        if (kDebugMode) {
-          print('[Repository] Warning: Unknown piece character "$char" at index $index');
-        }
-        continue; // Skip unknown characters
+        continue; // Skip empy space and unknown
       }
 
       pieces[position] = piece;

@@ -1,4 +1,5 @@
 import 'package:checkmate_tvz/domain/chess_board.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../data/repositories/chess_game_repository.dart';
 import '../../data/result/result.dart';
@@ -13,40 +14,71 @@ class ChessBoardWidget extends StatefulWidget {
   State<ChessBoardWidget> createState() => _ChessBoardWidgetState();
 }
 
+enum BoardMode {
+  edit,   // User is arranging pieces
+  play    // Normal gameplay with backend
+}
+
 class _ChessBoardWidgetState extends State<ChessBoardWidget> {
   final ChessGameRepository _repository = ChessGameRepository();
   ChessBoard chessBoard = ChessBoard();
   ChessPosition? dragSourcePosition;
   bool _isLoading = false;
   String? _errorMessage;
+  BoardMode _boardMode = BoardMode.edit;
+  bool _hasStartedGame = false;
 
   @override
   void initState() {
     super.initState();
-    _initializeGame();
+    _initializeBoard();
   }
 
-  Future<void> _initializeGame() async {
+  void _initializeBoard() {
+    setState(() {
+      chessBoard.init();
+      _boardMode = BoardMode.edit;
+      _hasStartedGame = false;
+    });
+
+    if (kDebugMode) {
+      print('[ChessBoard] Initialized in Edit Mode');
+    }
+  }
+
+  Future<void> _startGame() async {
+    if (_hasStartedGame) return;  // Prevent double-starts
+
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
 
-    chessBoard.init();
     final fen = chessBoard.toFen();
+
+    if (kDebugMode) {
+      print('[ChessBoard] Starting game with FEN: $fen');
+    }
+
     final result = await _repository.startGameFromFen(fen: fen, isWhite: true);
 
     if (!mounted) return;
 
     setState(() {
       _isLoading = false;
+      _hasStartedGame = true;
+
       switch (result) {
         case Success(data: final board):
           chessBoard = board;
+          _boardMode = BoardMode.play;  // Transition to play mode
+          if (kDebugMode) {
+            print('[ChessBoard] Game started successfully, switched to Play Mode');
+          }
         case Failure(message: final msg):
           _errorMessage = msg;
-          // Fallback to local initialization for offline functionality
-          chessBoard.init();
+          _boardMode = BoardMode.edit;  // Stay in edit mode on error
+          _hasStartedGame = false;      // Allow retry
       }
     });
   }
@@ -84,20 +116,30 @@ class _ChessBoardWidgetState extends State<ChessBoardWidget> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
-    }
-
     if (_errorMessage != null) {
       return error(context);
     }
 
-    return success();
+    return Column(
+      children: [
+        board(),  // Existing board widget
+
+        if (_boardMode == BoardMode.edit)
+          Positioned(
+            bottom: 16,
+            right: 16,
+            child: FloatingActionButton.extended(
+              onPressed: _startGame,
+              icon: const Icon(Icons.play_arrow),
+              label: const Text('Start Game'),
+              backgroundColor: Theme.of(context).colorScheme.primary,
+            ),
+          ),
+      ],
+    );
   }
 
-    Widget error(BuildContext context) {
+  Widget error(BuildContext context) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -121,17 +163,25 @@ class _ChessBoardWidgetState extends State<ChessBoardWidget> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
+
+            // Retry with current board position
             ElevatedButton.icon(
-              onPressed: _initializeGame,
+              onPressed: () {
+                setState(() {
+                  _errorMessage = null;  // Clear error, try again
+                });
+                _startGame();  // Retry with current position (NOT _initializeGame)
+              },
               icon: const Icon(Icons.refresh),
               label: const Text('Retry'),
             ),
             const SizedBox(height: 8),
             Text(
-              'Playing offline with local board',
+              'Custom position preserved - click Retry to start with current board',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface.withAlpha(153),
-                  ),
+                color: Theme.of(context).colorScheme.onSurface.withAlpha(153),
+              ),
+              textAlign: TextAlign.center,
             ),
           ],
         ),
@@ -139,7 +189,7 @@ class _ChessBoardWidgetState extends State<ChessBoardWidget> {
     );
   }
 
-  Widget success() {
+  Widget board() {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: AspectRatio(
@@ -166,6 +216,7 @@ class _ChessBoardWidgetState extends State<ChessBoardWidget> {
               onPieceDropped: _onPieceDropped,
               onDragStarted: () => _onDragStarted(position),
               onDragCompleted: _onDragCompleted,
+              isDraggingEnabled: !_isLoading,
             );
           },
         ),

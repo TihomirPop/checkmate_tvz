@@ -11,6 +11,7 @@ class ChessField extends StatelessWidget {
   final Function(ChessPiece, ChessPosition)? onPieceDropped;
   final VoidCallback? onDragStarted;
   final VoidCallback? onDragCompleted;
+  final bool isDraggingEnabled;
 
   const ChessField({
     super.key,
@@ -21,6 +22,7 @@ class ChessField extends StatelessWidget {
     this.onPieceDropped,
     this.onDragStarted,
     this.onDragCompleted,
+    this.isDraggingEnabled = true,
   });
 
   @override
@@ -46,6 +48,7 @@ class ChessField extends StatelessWidget {
                   onDragStarted: onDragStarted,
                   onDragCompleted: onDragCompleted,
                   onDraggableCanceled: onDragCompleted,
+                  enabled: isDraggingEnabled,
                 )
               : null,
         );

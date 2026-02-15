@@ -21,21 +21,7 @@ class MyApp extends StatelessWidget {
           title: const Text('Checkmate TVZ'),
           backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         ),
-        body: Center(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final maxSize = constraints.maxWidth < constraints.maxHeight
-                  ? constraints.maxWidth
-                  : constraints.maxHeight;
-
-              return SizedBox(
-                width: maxSize,
-                height: maxSize,
-                child: const ChessBoardWidget(),
-              );
-            },
-          ),
-        ),
+        body: ChessBoardWidget(),
       ),
     );
   }
