@@ -410,69 +410,71 @@ class ChessBoardWidgetState extends State<ChessBoardWidget> {
       return error(context);
     }
 
-    return Column(
-      children: [
-        board(), // Existing board widget
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          board(),
 
-        if (_boardMode == BoardMode.edit) ...[
-          const SizedBox(height: 16),
-          // Piece spawner for adding pieces to the board
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: PieceSpawnerWidget(onPieceDeleted: _onPieceDeletedFromBoard),
-          ),
-          const SizedBox(height: 16),
-          // Player color selection toggle
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text(
-                'Play as:',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-              ),
-              const SizedBox(width: 12),
-              SegmentedButton<bool>(
-                segments: const [
-                  ButtonSegment(
-                    value: true,
-                    label: Text('Light'),
-                    icon: Icon(Icons.light_mode),
-                  ),
-                  ButtonSegment(
-                    value: false,
-                    label: Text('Dark'),
-                    icon: Icon(Icons.dark_mode),
-                  ),
-                ],
-                selected: {_playerIsWhite},
-                onSelectionChanged: (Set<bool> newSelection) {
-                  setState(() {
-                    _playerIsWhite = newSelection.first;
-                  });
-                },
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          OutlinedButton.icon(
-            onPressed: _isLoading ? null : _saveCurrentPosition,
-            icon: const Icon(Icons.save),
-            label: const Text('Save Starting Position'),
-            style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          if (_boardMode == BoardMode.edit) ...[
+            const SizedBox(height: 16),
+            // Piece spawner for adding pieces to the board
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: PieceSpawnerWidget(onPieceDeleted: _onPieceDeletedFromBoard),
             ),
-          ),
-          const SizedBox(height: 8),
-          FilledButton.icon(
-            onPressed: _startGame,
-            icon: const Icon(Icons.play_arrow),
-            label: const Text('Start Game'),
-            style: FilledButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            const SizedBox(height: 16),
+            // Player color selection toggle
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text(
+                  'Play as:',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                ),
+                const SizedBox(width: 12),
+                SegmentedButton<bool>(
+                  segments: const [
+                    ButtonSegment(
+                      value: true,
+                      label: Text('Light'),
+                      icon: Icon(Icons.light_mode),
+                    ),
+                    ButtonSegment(
+                      value: false,
+                      label: Text('Dark'),
+                      icon: Icon(Icons.dark_mode),
+                    ),
+                  ],
+                  selected: {_playerIsWhite},
+                  onSelectionChanged: (Set<bool> newSelection) {
+                    setState(() {
+                      _playerIsWhite = newSelection.first;
+                    });
+                  },
+                ),
+              ],
             ),
-          ),
+            const SizedBox(height: 16),
+            OutlinedButton.icon(
+              onPressed: _isLoading ? null : _saveCurrentPosition,
+              icon: const Icon(Icons.save),
+              label: const Text('Save Starting Position'),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              ),
+            ),
+            const SizedBox(height: 8),
+            FilledButton.icon(
+              onPressed: _startGame,
+              icon: const Icon(Icons.play_arrow),
+              label: const Text('Start Game'),
+              style: FilledButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              ),
+            ),
+          ],
         ],
-      ],
+      ),
     );
   }
 
