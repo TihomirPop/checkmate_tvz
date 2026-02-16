@@ -440,9 +440,9 @@ class ChessBoardWidgetState extends State<ChessBoardWidget> {
     return SingleChildScrollView(
       child: Column(
         children: [
+          board(),
           if (_boardMode == BoardMode.play && _gameOverMessage == null)
             turnIndicator(context),
-          board(),
 
           if (_boardMode == BoardMode.edit) ...[
             const SizedBox(height: 16),
@@ -567,7 +567,7 @@ class ChessBoardWidgetState extends State<ChessBoardWidget> {
 
   Padding turnIndicator(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(left: 16, top: 16, right: 16),
+      padding: const EdgeInsets.all(16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
