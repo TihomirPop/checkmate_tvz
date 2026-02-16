@@ -18,6 +18,8 @@ class ChessGameRepository {
   }) : _apiService = apiService ?? ChessApiService(),
        _preferencesService = preferencesService ?? PreferencesService();
 
+  ChessApiService get apiService => _apiService;
+
   /// Start a new game from a FEN position
   /// Transforms the API response (64-character array) into ChessBoard domain model
   Future<Result<ChessBoard>> startGameFromFen({

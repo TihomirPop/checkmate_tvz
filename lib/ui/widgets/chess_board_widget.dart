@@ -44,6 +44,19 @@ class ChessBoardWidgetState extends State<ChessBoardWidget> {
     _initializeBoard();
   }
 
+  /// Public method to get the current API base URL
+  String getApiUrl() {
+    return _repository.apiService.baseUrl;
+  }
+
+  /// Public method to update the API base URL
+  void setApiUrl(String url) {
+    if (kDebugMode) {
+      print('[ChessBoard] Updating API URL to: $url');
+    }
+    _repository.apiService.baseUrl = url;
+  }
+
   /// Public method to load board from FEN string
   /// Loads the position but keeps the board in Edit Mode for manual adjustments
   Future<void> loadFromFen(String fen) async {

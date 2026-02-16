@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'ui/widgets/api_url_dialog.dart';
 import 'ui/widgets/chess_board_widget.dart';
 import 'ui/widgets/fen_input_dialog.dart';
 import 'ui/widgets/game_drawer.dart';
@@ -46,6 +47,24 @@ class MyApp extends StatelessWidget {
                 builder: (context) => SavedPositionsDialog(
                   onLoadPosition: (fen) {
                     chessBoardKey.currentState?.loadFromFen(fen);
+                  },
+                ),
+              );
+            },
+            onSetApiUrl: () {
+              final currentUrl = chessBoardKey.currentState?.getApiUrl() ?? 'http://localhost:8080';
+              showDialog<void>(
+                context: context,
+                builder: (context) => ApiUrlDialog(
+                  currentUrl: currentUrl,
+                  onSubmit: (url) {
+                    chessBoardKey.currentState?.setApiUrl(url);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('API URL updated to: $url'),
+                        duration: const Duration(seconds: 2),
+                      ),
+                    );
                   },
                 ),
               );

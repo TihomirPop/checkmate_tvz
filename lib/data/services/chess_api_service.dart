@@ -9,7 +9,7 @@ import '../models/move_dto.dart';
 import '../result/result.dart';
 
 class ChessApiService {
-  final String baseUrl;
+  String baseUrl;
   final http.Client _client;
   static const Duration _timeout = Duration(seconds: 10);
 
@@ -193,7 +193,7 @@ class ChessApiService {
 
     try {
       final uri = Uri.parse('$baseUrl/chess/moves');
-      final response = await _client.get(uri).timeout(_timeout);
+      final response = await _client.get(uri, headers: {"ngrok-skip-browser-warning": "true"}).timeout(_timeout);
 
       if (kDebugMode) {
         print('[ChessAPI] Response status: ${response.statusCode}');

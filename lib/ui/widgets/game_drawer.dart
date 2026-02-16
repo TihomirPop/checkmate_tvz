@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 /// - New Game: Resets the board to Edit Mode
 /// - Load from FEN: Loads a custom position from FEN string
 /// - Load Saved Position: Loads a previously saved position
+/// - Set API URL: Configure the Chess Engine backend URL
 ///
 /// Designed to be extensible for future features (settings, history, etc.)
 class GameDrawer extends StatelessWidget {
@@ -17,11 +18,14 @@ class GameDrawer extends StatelessWidget {
 
   final VoidCallback? onLoadSavedPositions;
 
+  final VoidCallback? onSetApiUrl;
+
   const GameDrawer({
     super.key,
     this.onNewGame,
     this.onLoadFen,
     this.onLoadSavedPositions,
+    this.onSetApiUrl,
   });
 
   @override
@@ -82,6 +86,14 @@ class GameDrawer extends StatelessWidget {
             },
           ),
           const Divider(),
+          ListTile(
+            leading: const Icon(Icons.settings_ethernet),
+            title: const Text('Set API URL'),
+            onTap: () {
+              Navigator.pop(context);
+              onSetApiUrl?.call();
+            },
+          ),
           // Future features can be added here:
           // - Settings
           // - Game History
