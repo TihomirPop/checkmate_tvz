@@ -37,6 +37,28 @@ class ChessBoardWidgetState extends State<ChessBoardWidget> {
   void initState() {
     super.initState();
     _initializeBoard();
+    _loadSavedApiUrl();
+  }
+
+  /// Load saved API URL from preferences on app start
+  Future<void> _loadSavedApiUrl() async {
+    final result = await _repository.getSavedApiUrl();
+
+    switch (result) {
+      case Success(data: final url?):
+        _repository.apiService.baseUrl = url;
+        if (kDebugMode) {
+          print('[ChessBoard] Loaded saved API URL: $url');
+        }
+      case Success(data: null):
+        if (kDebugMode) {
+          print('[ChessBoard] No saved API URL, using default');
+        }
+      case Failure(message: final msg):
+        if (kDebugMode) {
+          print('[ChessBoard] Failed to load API URL: $msg');
+        }
+    }
   }
 
   /// Public method to reset the game
@@ -55,6 +77,11 @@ class ChessBoardWidgetState extends State<ChessBoardWidget> {
       print('[ChessBoard] Updating API URL to: $url');
     }
     _repository.apiService.baseUrl = url;
+    _repository.saveApiUrl(url).then((result) {
+      if (result is Failure && kDebugMode) {
+        print('[ChessBoard] Failed to save API URL: ${result.message}');
+      }
+    });
   }
 
   /// Public method to load board from FEN string

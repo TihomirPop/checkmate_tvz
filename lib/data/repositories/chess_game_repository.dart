@@ -223,6 +223,16 @@ class ChessGameRepository {
     return await _preferencesService.deletePosition(index);
   }
 
+  /// Save API URL to preferences
+  Future<Result<void>> saveApiUrl(String url) {
+    return _preferencesService.saveApiUrl(url);
+  }
+
+  /// Get saved API URL from preferences
+  Future<Result<String?>> getSavedApiUrl() {
+    return _preferencesService.getApiUrl();
+  }
+
   /// Dispose resources
   void dispose() {
     _apiService.dispose();

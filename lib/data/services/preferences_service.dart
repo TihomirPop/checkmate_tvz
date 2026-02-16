@@ -8,6 +8,7 @@ import '../result/result.dart';
 /// All methods return [Result<T>] for consistent error handling.
 class PreferencesService {
   static const String _savedPositionsKey = 'saved_chess_positions';
+  static const String _apiUrlKey = 'api_url';
 
   SharedPreferences? _prefs;
 
@@ -80,7 +81,10 @@ class PreferencesService {
 
       positions.add(fen);
 
-      final success = await _prefs!.setStringList(_savedPositionsKey, positions);
+      final success = await _prefs!.setStringList(
+        _savedPositionsKey,
+        positions,
+      );
 
       if (!success) {
         throw Exception('SharedPreferences.setStringList returned false');
@@ -127,7 +131,10 @@ class PreferencesService {
       }
 
       final removed = positions.removeAt(index);
-      final success = await _prefs!.setStringList(_savedPositionsKey, positions);
+      final success = await _prefs!.setStringList(
+        _savedPositionsKey,
+        positions,
+      );
 
       if (!success) {
         throw Exception('SharedPreferences.setStringList returned false');
@@ -147,6 +154,51 @@ class PreferencesService {
         print('[PreferencesService] $message');
       }
       return Failure(message);
+    }
+  }
+
+  /// Save API URL to preferences
+  /// Returns [Success] if save operation completes successfully
+  /// Returns [Failure] if storage operation fails
+  Future<Result<void>> saveApiUrl(String url) async {
+    final result = await _ensureInitialized();
+    if (result is Failure) return result;
+
+    try {
+      final success = await _prefs!.setString(_apiUrlKey, url);
+      if (!success) {
+        return const Failure('Failed to save API URL');
+      }
+
+      if (kDebugMode) {
+        print('[PreferencesService] Saved API URL: $url');
+      }
+
+      return const Success(null);
+    } catch (e) {
+      return Failure('Error saving API URL: $e');
+    }
+  }
+
+  /// Get saved API URL from preferences
+  /// Returns [Success] with URL string if found, null if not set
+  /// Returns [Failure] if storage access fails
+  Future<Result<String?>> getApiUrl() async {
+    final result = await _ensureInitialized();
+    if (result is Failure) return Failure(result.message);
+
+    try {
+      final url = _prefs!.getString(_apiUrlKey);
+
+      if (kDebugMode) {
+        print(
+          '[PreferencesService] Retrieved API URL: ${url ?? "none (using default)"}',
+        );
+      }
+
+      return Success(url); // null if not set
+    } catch (e) {
+      return Failure('Error loading API URL: $e');
     }
   }
 }
