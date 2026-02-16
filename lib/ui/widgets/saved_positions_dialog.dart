@@ -111,7 +111,7 @@ class _SavedPositionsDialogState extends State<SavedPositionsDialog> {
       builder: (context) => AlertDialog(
         title: const Text('Delete Position?'),
         content: Text(
-          'Are you sure you want to delete this position?\n\n${_truncateFen(fen)}',
+          'Are you sure you want to delete this position?\n\n',
           style: const TextStyle(fontFamily: 'monospace'),
         ),
         actions: [
