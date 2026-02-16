@@ -413,6 +413,8 @@ class ChessBoardWidgetState extends State<ChessBoardWidget> {
     return SingleChildScrollView(
       child: Column(
         children: [
+          if (_boardMode == BoardMode.play && _gameOverMessage == null)
+            turnIndicator(context),
           board(),
 
           if (_boardMode == BoardMode.edit) ...[
@@ -420,7 +422,9 @@ class ChessBoardWidgetState extends State<ChessBoardWidget> {
             // Piece spawner for adding pieces to the board
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: PieceSpawnerWidget(onPieceDeleted: _onPieceDeletedFromBoard),
+              child: PieceSpawnerWidget(
+                onPieceDeleted: _onPieceDeletedFromBoard,
+              ),
             ),
             const SizedBox(height: 16),
             // Player color selection toggle
@@ -460,7 +464,10 @@ class ChessBoardWidgetState extends State<ChessBoardWidget> {
               icon: const Icon(Icons.save),
               label: const Text('Save Starting Position'),
               style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
               ),
             ),
             const SizedBox(height: 8),
@@ -469,7 +476,10 @@ class ChessBoardWidgetState extends State<ChessBoardWidget> {
               icon: const Icon(Icons.play_arrow),
               label: const Text('Start Game'),
               style: FilledButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
               ),
             ),
           ],
@@ -524,6 +534,39 @@ class ChessBoardWidgetState extends State<ChessBoardWidget> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Padding turnIndicator(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 16, top: 16, right: 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          if (_isLoading)
+            Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Theme.of(context).colorScheme.onSurface.withAlpha(180),
+                ),
+              ),
+            ),
+          Text(
+            _isLoading ? 'Opponent Thinking...' : 'Your Turn',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurface.withAlpha(_isLoading ? 180 : 240),
+            ),
+          ),
+        ],
       ),
     );
   }
