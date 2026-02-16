@@ -31,6 +31,7 @@ class ChessBoardWidgetState extends State<ChessBoardWidget> {
   bool _hasStartedGame = false;
   Map<ChessPosition, Set<ChessPosition>> _validMoves = {};
   String? _gameOverMessage; // "Player wins", "Opponent wins", or "Stalemate"
+  bool _playerIsWhite = true;
 
   @override
   void initState() {
@@ -56,7 +57,7 @@ class ChessBoardWidgetState extends State<ChessBoardWidget> {
     });
 
     // Use existing repository method
-    final result = await _repository.startGameFromFen(fen: fen, isWhite: true);
+    final result = await _repository.startGameFromFen(fen: fen, isWhite: _playerIsWhite);
 
     if (!mounted) return;
 
@@ -101,6 +102,7 @@ class ChessBoardWidgetState extends State<ChessBoardWidget> {
       _hasStartedGame = false;
       _gameOverMessage = null;
       _validMoves = {};
+      _playerIsWhite = true; // Reset to default
     });
 
     if (kDebugMode) {
@@ -122,7 +124,7 @@ class ChessBoardWidgetState extends State<ChessBoardWidget> {
       print('[ChessBoard] Starting game with FEN: $fen');
     }
 
-    final result = await _repository.startGameFromFen(fen: fen, isWhite: true);
+    final result = await _repository.startGameFromFen(fen: fen, isWhite: _playerIsWhite);
 
     if (!mounted) return;
 
@@ -351,6 +353,38 @@ class ChessBoardWidgetState extends State<ChessBoardWidget> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: PieceSpawnerWidget(onPieceDeleted: _onPieceDeletedFromBoard),
+          ),
+          const SizedBox(height: 16),
+          // Player color selection toggle
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text(
+                'Play as:',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              ),
+              const SizedBox(width: 12),
+              SegmentedButton<bool>(
+                segments: const [
+                  ButtonSegment(
+                    value: true,
+                    label: Text('Light'),
+                    icon: Icon(Icons.light_mode),
+                  ),
+                  ButtonSegment(
+                    value: false,
+                    label: Text('Dark'),
+                    icon: Icon(Icons.dark_mode),
+                  ),
+                ],
+                selected: {_playerIsWhite},
+                onSelectionChanged: (Set<bool> newSelection) {
+                  setState(() {
+                    _playerIsWhite = newSelection.first;
+                  });
+                },
+              ),
+            ],
           ),
           const SizedBox(height: 16),
           FilledButton.icon(
