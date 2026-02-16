@@ -57,7 +57,10 @@ class ChessBoardWidgetState extends State<ChessBoardWidget> {
     });
 
     // Use existing repository method
-    final result = await _repository.startGameFromFen(fen: fen, isWhite: _playerIsWhite);
+    final result = await _repository.startGameFromFen(
+      fen: fen,
+      isWhite: _playerIsWhite,
+    );
 
     if (!mounted) return;
 
@@ -124,7 +127,10 @@ class ChessBoardWidgetState extends State<ChessBoardWidget> {
       print('[ChessBoard] Starting game with FEN: $fen');
     }
 
-    final result = await _repository.startGameFromFen(fen: fen, isWhite: _playerIsWhite);
+    final result = await _repository.startGameFromFen(
+      fen: fen,
+      isWhite: _playerIsWhite,
+    );
 
     if (!mounted) return;
 
@@ -149,6 +155,54 @@ class ChessBoardWidgetState extends State<ChessBoardWidget> {
           _hasStartedGame = false; // Allow retry
       }
     });
+  }
+
+  /// Save the current board position to local storage
+  Future<void> _saveCurrentPosition() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    final fen = chessBoard.toFen();
+
+    if (kDebugMode) {
+      print('[ChessBoard] Saving position: $fen');
+    }
+
+    final result = await _repository.saveCurrentPosition(fen);
+
+    if (!mounted) return;
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    if (!mounted) return;
+
+    switch (result) {
+      case Success():
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Position saved successfully!'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+        if (kDebugMode) {
+          print('[ChessBoard] Position saved successfully');
+        }
+      case Failure(message: final msg):
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to save: $msg'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+        if (kDebugMode) {
+          print('[ChessBoard] Failed to save position: $msg');
+        }
+    }
   }
 
   Future<void> _fetchValidMoves() async {
@@ -387,6 +441,15 @@ class ChessBoardWidgetState extends State<ChessBoardWidget> {
             ],
           ),
           const SizedBox(height: 16),
+          OutlinedButton.icon(
+            onPressed: _isLoading ? null : _saveCurrentPosition,
+            icon: const Icon(Icons.save),
+            label: const Text('Save Starting Position'),
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            ),
+          ),
+          const SizedBox(height: 8),
           FilledButton.icon(
             onPressed: _startGame,
             icon: const Icon(Icons.play_arrow),

@@ -6,12 +6,17 @@ import '../models/move_dto.dart';
 import '../models/move_result.dart';
 import '../result/result.dart';
 import '../services/chess_api_service.dart';
+import '../services/preferences_service.dart';
 
 class ChessGameRepository {
   final ChessApiService _apiService;
+  final PreferencesService _preferencesService;
 
-  ChessGameRepository({ChessApiService? apiService})
-    : _apiService = apiService ?? ChessApiService();
+  ChessGameRepository({
+    ChessApiService? apiService,
+    PreferencesService? preferencesService,
+  }) : _apiService = apiService ?? ChessApiService(),
+       _preferencesService = preferencesService ?? PreferencesService();
 
   /// Start a new game from a FEN position
   /// Transforms the API response (64-character array) into ChessBoard domain model
@@ -125,10 +130,7 @@ class ChessGameRepository {
 
     return switch (boardResult) {
       Success(data: final board) => Success(
-        MoveResult(
-          board: board,
-          endGameMessage: response.endGameMessage,
-        ),
+        MoveResult(board: board, endGameMessage: response.endGameMessage),
       ),
       Failure(message: final msg, statusCode: final code) => Failure(
         msg,
@@ -187,6 +189,26 @@ class ChessGameRepository {
   /// Inverse of _indexToPosition
   int _positionToIndex(ChessPosition position) {
     return position.row * 8 + position.col;
+  }
+
+  /// Save the current board position as FEN string to local storage
+  /// Returns [Success] if save operation completes successfully
+  /// Returns [Failure] if storage operation fails
+  Future<Result<void>> saveCurrentPosition(String fen) async {
+    if (kDebugMode) {
+      print('[Repository] Saving position: $fen');
+    }
+    return await _preferencesService.savePosition(fen);
+  }
+
+  /// Get all saved board positions as FEN strings from local storage
+  /// Returns empty list if no positions are saved
+  /// Returns [Failure] if storage access fails
+  Future<Result<List<String>>> getSavedPositions() async {
+    if (kDebugMode) {
+      print('[Repository] Loading saved positions');
+    }
+    return await _preferencesService.getSavedPositions();
   }
 
   /// Dispose resources
