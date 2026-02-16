@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 /// Currently includes:
 /// - New Game: Resets the board to Edit Mode
 /// - Load from FEN: Loads a custom position from FEN string
+/// - Load Saved Position: Loads a previously saved position
 ///
 /// Designed to be extensible for future features (settings, history, etc.)
 class GameDrawer extends StatelessWidget {
@@ -14,7 +15,14 @@ class GameDrawer extends StatelessWidget {
 
   final VoidCallback? onLoadFen;
 
-  const GameDrawer({super.key, this.onNewGame, this.onLoadFen});
+  final VoidCallback? onLoadSavedPositions;
+
+  const GameDrawer({
+    super.key,
+    this.onNewGame,
+    this.onLoadFen,
+    this.onLoadSavedPositions,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -61,10 +69,16 @@ class GameDrawer extends StatelessWidget {
             leading: const Icon(Icons.input),
             title: const Text('Load from FEN'),
             onTap: () {
-              // Close drawer first for smooth UX
               Navigator.pop(context);
-              // Then invoke callback if provided
               onLoadFen?.call();
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.history),
+            title: const Text('Load Saved Position'),
+            onTap: () {
+              Navigator.pop(context);
+              onLoadSavedPositions?.call();
             },
           ),
           const Divider(),

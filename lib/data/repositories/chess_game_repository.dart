@@ -211,6 +211,16 @@ class ChessGameRepository {
     return await _preferencesService.getSavedPositions();
   }
 
+  /// Delete a saved board position at the specified index
+  /// Returns [Success] if deletion completes successfully
+  /// Returns [Failure] if index is out of bounds or storage operation fails
+  Future<Result<void>> deletePosition(int index) async {
+    if (kDebugMode) {
+      print('[Repository] Deleting position at index: $index');
+    }
+    return await _preferencesService.deletePosition(index);
+  }
+
   /// Dispose resources
   void dispose() {
     _apiService.dispose();

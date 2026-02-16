@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'ui/widgets/chess_board_widget.dart';
 import 'ui/widgets/fen_input_dialog.dart';
 import 'ui/widgets/game_drawer.dart';
+import 'ui/widgets/saved_positions_dialog.dart';
 
 void main() {
   runApp(const MyApp());
@@ -34,6 +35,16 @@ class MyApp extends StatelessWidget {
                 context: context,
                 builder: (context) => FenInputDialog(
                   onSubmit: (fen) {
+                    chessBoardKey.currentState?.loadFromFen(fen);
+                  },
+                ),
+              );
+            },
+            onLoadSavedPositions: () {
+              showDialog<void>(
+                context: context,
+                builder: (context) => SavedPositionsDialog(
+                  onLoadPosition: (fen) {
                     chessBoardKey.currentState?.loadFromFen(fen);
                   },
                 ),
